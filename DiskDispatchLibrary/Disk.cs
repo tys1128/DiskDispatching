@@ -15,7 +15,7 @@ namespace DiskDispatchLibrary
         public int TimeToStart { get; set; }
         public int Rpm { get; set; }
         public int SectorNum { get; set; }
-        public int BytePerSector { get; set; }
+        public int BytePerSector { get; set; }dfghdggfhgfdhytfjgh
         public int[] Track { get; set; }
 
         public DiskState DiskState { get; }
