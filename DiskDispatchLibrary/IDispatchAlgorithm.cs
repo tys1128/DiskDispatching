@@ -7,45 +7,6 @@ using System.Threading.Tasks;
 namespace DiskDispatchLibrary
 {
     /// <summary>
-    /// 存储磁盘当前的状态
-    /// </summary>
-    public class DiskState
-    {
-        /// <summary>
-        /// 移动方向(是否向内移动)
-        /// </summary>
-        bool MoveIn { get; set; }
-        /// <summary>
-        /// 目标磁道编号
-        /// </summary>
-        int Target { get; set; }
-        /// <summary>
-        /// 当前磁道
-        /// </summary>
-        int Now { get; set; }
-
-
-
-        /// <summary>
-        /// 寻道时间(ms)
-        /// </summary>
-        int TotalSeekTime { get; set; }
-        /// <summary>
-        /// 总传输（访问）时间(ms)
-        /// </summary>
-        int TotalAccessTime { get; set; }
-        /// <summary>
-        /// 平均旋转延迟时间(ms),
-        /// 读取时，一个磁道未读取的扇区/SectorNum
-        /// </summary>
-        int ArgAccessDelay { get; set; }
-        /// <summary>
-        /// 所有访问处理时间(ms)
-        /// </summary>
-        int TotalRunTime { get; set; }
-
-    }
-    /// <summary>
     /// 磁盘参数设置接口
     /// </summary>
     interface IDiskArgument
@@ -54,6 +15,10 @@ namespace DiskDispatchLibrary
         /// 跨越1个磁道所用时间（单位：毫秒）
         /// </summary>
         int TimePerTrack { get; set; }
+        /// <summary>
+        /// 跨越1个扇区所用时间（单位：毫秒）
+        /// </summary>
+        int TimePerSector { get; set; }
         /// <summary>
         /// 启动时间（单位：毫秒）
         /// </summary>
@@ -71,14 +36,15 @@ namespace DiskDispatchLibrary
         /// </summary>
         int BytePerSector { get; set; }
         /// <summary>
+        /// 平均旋转延迟时间(ms),
+        /// 通常使用磁盘旋转一周所需时间的1/2表示
+        /// </summary>
+        int ArgAccessDelay { get; set; }
+        /// <summary>
         /// 盘面的磁道数（由外向内）固定为：0,1,2，……，198,199
-        /// 每个单元存储磁道的I/O请求数量（也许是请求的字节数的意思 =_=）
+        /// 每个单元存储磁道的I/O请求数量,忽略不同请求对同一磁道请求的不同
         /// </summary>
         int[] Track { get; set; }
-        /// <summary>
-        /// 磁盘当前状态
-        /// </summary>
-        DiskState DiskState { get; }
     }
 
 
@@ -93,7 +59,7 @@ namespace DiskDispatchLibrary
         /// </summary>
         /// <param name="S">磁道I/O访问序列S, 参数为磁道编号，访问字节数</param>
         /// <returns>
-        /// 启动后返回一次磁盘的状态，之后每经过读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 返回一次
+        /// 启动后返回一次磁盘的状态，之后每个状态间的间隔为读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 返回一次
         /// </returns>
         IEnumerable<DiskState> FCFS(List<KeyValuePair<int, int>> S);
         /// <summary>
@@ -102,7 +68,7 @@ namespace DiskDispatchLibrary
         /// </summary>
         /// <param name="S">磁道I/O访问序列S</param>
         /// <returns>
-        /// 启动后返回一次磁盘的状态，之后每经过读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 返回一次
+        /// 启动后返回一次磁盘的状态，之后返回的每个状态，状态间的间隔为读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 
         /// </returns>
         IEnumerable<DiskState> SSTF(List<KeyValuePair<int, int>> S);
         /// <summary>
@@ -111,7 +77,7 @@ namespace DiskDispatchLibrary
         /// </summary>
         /// <param name="S">磁道I/O访问序列S</param>
         /// <returns>
-        /// 启动后返回一次磁盘的状态，之后每经过读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 返回一次
+        /// 启动后返回一次磁盘的状态，之后返回的每个状态，状态间的间隔为读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 
         /// </returns>
         IEnumerable<DiskState> SCAN(List<KeyValuePair<int, int>> S);
         /// <summary>
@@ -120,7 +86,7 @@ namespace DiskDispatchLibrary
         /// </summary>
         /// <param name="S">磁道I/O访问序列S</param>
         /// <returns>
-        /// 启动后返回一次磁盘的状态，之后每经过读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 返回一次
+        /// 启动后返回一次磁盘的状态，之后返回的每个状态，状态间的间隔为读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 
         /// </returns>
         IEnumerable<DiskState> LOOK(List<KeyValuePair<int, int>> S);
 
