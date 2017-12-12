@@ -23,7 +23,7 @@ namespace DiskDispatchLibrary
         /// 当前磁道
         /// </summary>
         public int Now { get; set; }
-        
+
         /// <summary>
         /// 总寻道时间(ms)
         /// </summary>
@@ -32,7 +32,6 @@ namespace DiskDispatchLibrary
         /// 总传输（访问）时间(ms)
         /// </summary>
         public int TotalAccessTime { get; set; }
-        public int ArgAccessDelay { get; set; }
         /// <summary>
         /// 总运行时间(ms)
         /// </summary>
@@ -94,7 +93,7 @@ namespace DiskDispatchLibrary
             Random random = new Random();
             for (int i = 0; i < n; i++)
             {
-                s.Add(new KeyValuePair<int, int>(random.Next(0, n), random.Next(1024)));
+                s.Add(new KeyValuePair<int, int>(random.Next(0, trackNum), random.Next(1024)));
             }
             return s;
         }
@@ -113,7 +112,7 @@ namespace DiskDispatchLibrary
             TimePerSector = 60 * 1000 / (Rpm * SectorNum);
             DiskState = new DiskState()
             {
-                Now = random.Next(0, trackNum),
+                Now = random.Next(70, trackNum - 70),
                 MoveIn = Convert.ToBoolean(random.Next(0, 2)),
             };
         }

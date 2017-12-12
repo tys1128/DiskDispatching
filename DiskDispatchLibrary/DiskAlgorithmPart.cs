@@ -18,7 +18,7 @@ namespace DiskDispatchLibrary
             {
                 Track[i.Key] = i.Value;
             }
-            S.Clear();
+            //S.Clear();
         }
         /// <summary>
         /// 从Track[]中选出离Track[now]最近的磁道
@@ -29,16 +29,18 @@ namespace DiskDispatchLibrary
         {
             int i = now - 1;
             int j = now + 1;
-            for (; i >= 0 && j < Track.Length; i--, j++)
+            for (; i >= 0 || j < Track.Length; i--, j++)
             {
-                if (Track[i] != 0)
+                //
+                if (i >= 0 && Track[i] != 0)
                 {
                     return i;
                 }
-                if (Track[j] != 0)
+                if (j < Track.Length && Track[j] != 0)
                 {
                     return j;
                 }
+
             }
             //无请求
             return -1;
@@ -64,6 +66,7 @@ namespace DiskDispatchLibrary
 
                     yield return DiskState;
                 }
+                DiskState.Now--;
             }
             else
             {
@@ -77,6 +80,7 @@ namespace DiskDispatchLibrary
 
                     yield return DiskState;
                 }
+                DiskState.Now++;
             }
         }
         /// <summary>
@@ -135,7 +139,7 @@ namespace DiskDispatchLibrary
         /// </returns>
         public IEnumerable<DiskState> FCFS(List<KeyValuePair<int, int>> S)
         {
-            throw new NotImplementedException();
+            yield return DiskState;
         }
         /// <summary>
         /// 最短查找时间优先（SSTF）算法
@@ -168,6 +172,8 @@ namespace DiskDispatchLibrary
                 {
                     yield return item;
                 }
+                //读取完清空请求
+                Track[mostNearTrack] = 0;
                 mostNearTrack = GetMostNearTrack(DiskState.Now);
 
             }
@@ -182,7 +188,7 @@ namespace DiskDispatchLibrary
         /// </returns>
         public IEnumerable<DiskState> LOOK(List<KeyValuePair<int, int>> S)
         {
-            throw new NotImplementedException();
+            yield return DiskState;
         }
         /// <summary>
         /// 电梯算法（LOOK）
@@ -194,7 +200,7 @@ namespace DiskDispatchLibrary
         /// </returns>
         public IEnumerable<DiskState> SCAN(List<KeyValuePair<int, int>> S)
         {
-            throw new NotImplementedException();
+            yield return DiskState;
         }
 
 
