@@ -119,6 +119,10 @@ namespace Show
             List<KeyValuePair<int, int>> S = Disk.GetS(20);
             IEnumerable<DiskState>[] DiskStates = new IEnumerable<DiskState>[4];
 
+            //DiskStates[0] = new Disk().Test(S);
+            //DiskStates[1] = new Disk().Test(S);
+            //DiskStates[2] = new Disk().Test(S);
+            //DiskStates[3] = new Disk().Test(S);
 
             DiskStates[0] = new Disk().FCFS(S);
             DiskStates[1] = new Disk().LOOK(S);
