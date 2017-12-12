@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiskDispatchLibraryTests", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Show", "Show\Show.csproj", "{55BFE892-C18D-4D4A-A0F1-99951112042C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Show", "Show\Show.csproj", "{55BFE892-C18D-4D4A-A0F1-99951112042C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,9 @@ Global
 		{55BFE892-C18D-4D4A-A0F1-99951112042C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55BFE892-C18D-4D4A-A0F1-99951112042C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55BFE892-C18D-4D4A-A0F1-99951112042C}.Release|Any CPU.Build.0 = Release|Any CPU
+<<<<<<< HEAD
+>>>>>>> 1c16c63fa91e518d577efeec6fe8fdb47e2f4749
+=======
 >>>>>>> 1c16c63fa91e518d577efeec6fe8fdb47e2f4749
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
