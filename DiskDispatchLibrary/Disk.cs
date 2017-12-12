@@ -14,7 +14,7 @@ namespace DiskDispatchLibrary
         /// <summary>
         /// 移动方向(是否向内移动)
         /// </summary>
-        public bool MoveIn { get; set; }
+        public bool MoveIn { get; set; } 
         /// <summary>
         /// 目标磁道编号
         /// </summary>
