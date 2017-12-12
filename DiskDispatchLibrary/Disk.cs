@@ -78,10 +78,27 @@ namespace DiskDispatchLibrary
                 {
                     s.Add(new KeyValuePair<int, int>(random.Next(0, trackNum), random.Next(1024)));
                 }
-
                 return s;
             }
         }
+        /// <summary>
+        /// 获取随机产生的磁道I/O访问序列S
+        /// KeyValuePair<int, int>为磁道编号，访问字节数
+        /// </summary>
+        /// <param name="n">序列的长度</param>
+        /// <returns></returns>
+        static public List<KeyValuePair<int, int>> GetS(int n)
+        {
+            List<KeyValuePair<int, int>> s = new List<KeyValuePair<int, int>>(n);
+
+            Random random = new Random();
+            for (int i = 0; i < n; i++)
+            {
+                s.Add(new KeyValuePair<int, int>(random.Next(0, n), random.Next(1024)));
+            }
+            return s;
+        }
+
 
         public Disk()
         {

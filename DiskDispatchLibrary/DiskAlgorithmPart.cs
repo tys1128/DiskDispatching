@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DiskDispatchLibrary
 {
-    partial class Disk
+    public partial class Disk
     {
         /// <summary>
         /// 将S中的请求，加载到Track[]中
@@ -50,17 +50,33 @@ namespace DiskDispatchLibrary
         /// <returns>磁盘状态</returns>
         IEnumerable<DiskState> Move(int target)
         {
-            DiskState.MoveIn = DiskState.Now - target > 0 ? true : false;
+            DiskState.MoveIn = target - DiskState.Now > 0 ? true : false;
             DiskState.Target = target;
-            //移动
-            for (int i = DiskState.Now; i <= target; i++)
+            if (DiskState.MoveIn)
             {
-                DiskState.Now++;
+                //向内移动
+                for (int i = DiskState.Now; i <= target; i++)
+                {
+                    DiskState.Now++;
 
-                DiskState.TotalSeekTime += TimePerTrack;
-                DiskState.TotalRunTime += TimePerTrack;
+                    DiskState.TotalSeekTime += TimePerTrack;
+                    DiskState.TotalRunTime += TimePerTrack;
 
-                yield return DiskState;
+                    yield return DiskState;
+                }
+            }
+            else
+            {
+                //向外移动
+                for (int i = DiskState.Now; i >= target; i--)
+                {
+                    DiskState.Now--;
+
+                    DiskState.TotalSeekTime += TimePerTrack;
+                    DiskState.TotalRunTime += TimePerTrack;
+
+                    yield return DiskState;
+                }
             }
         }
         /// <summary>
