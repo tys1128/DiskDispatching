@@ -144,6 +144,10 @@ namespace DiskDispatchLibrary
         /// </returns>
         public IEnumerable<DiskState> FCFS(List<KeyValuePair<int, int>> S)
         {
+            //启动，初次返回状态
+            DiskState.TotalRunTime += TimeToStart;
+            yield return DiskState;
+
             foreach (var i in S)
             {
                 //移动
@@ -207,6 +211,11 @@ namespace DiskDispatchLibrary
         public IEnumerable<DiskState> SCAN(List<KeyValuePair<int, int>> S)
         {
             LoadRequest(S);
+
+            //启动，初次返回状态
+            DiskState.TotalRunTime += TimeToStart;
+            yield return DiskState;
+
             if (DiskState.MoveIn == true)
             {
                 for (int i = DiskState.Now; i <= 199; i++)
@@ -300,6 +309,10 @@ namespace DiskDispatchLibrary
             LoadRequest(S);
             List<int> TrackAdd = new List<int>();//装入比当前磁道大的含有请求的磁道下标
             List<int> TrackSub = new List<int>();//装入比当前磁道小或等于当前磁道的含有请求的磁道下标
+
+            //启动，初次返回状态
+            DiskState.TotalRunTime += TimeToStart;
+            yield return DiskState;
 
             //初始化TrackSub
             for (int i = 0; i <= DiskState.Now; i++)
