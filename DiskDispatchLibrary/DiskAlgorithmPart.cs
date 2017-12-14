@@ -188,7 +188,7 @@ namespace DiskDispatchLibrary
 
             //运行
             //仍存在需要处理的数据
-            while (mostNearTrack > 0)
+            while (mostNearTrack >= 0)
             {
                 //移动
                 foreach (var item in Move(mostNearTrack))

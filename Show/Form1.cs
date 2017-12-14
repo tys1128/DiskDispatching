@@ -92,6 +92,13 @@ namespace Show
             List<KeyValuePair<int, int>> S = Disk.GetS(20);
             IEnumerable<DiskState>[] DiskStates = new IEnumerable<DiskState>[4];
 
+            //测试用代码
+            //DiskStates[0] = new Disk().Test(S);
+            //DiskStates[1] = new Disk().Test(S);
+            //DiskStates[2] = new Disk().Test(S);
+            //DiskStates[3] = new Disk().Test(S);
+
+
             DiskStates[0] = new Disk().FCFS(S);
             DiskStates[1] = new Disk().LOOK(S);
             DiskStates[2] = new Disk().SCAN(S);
@@ -120,7 +127,7 @@ namespace Show
                     _In.MoveIn ? "向内" : "向外", _In.Target, _In.Now, _In.TotalSeekTime, _In.TotalAccessTime, _disk.ArgAccessDelay, _In.TotalRunTime),
                      TextFont, TextBrush, TextPos.X, TextPos.Y);
 
-            for(float i = DiskArmPosPointsLeftOn.X; i <= DiskArmPosPointsRightDown.X; i+=1)
+            for (float i = DiskArmPosPointsLeftOn.X; i <= DiskArmPosPointsRightDown.X; i += 1)
             {
                 _RenderTarget.SetPixel((int)i, (int)DiskArmPosPointsLeftOn.Y, Color.BlanchedAlmond);
                 _RenderTarget.SetPixel((int)i, (int)DiskArmPosPointsRightDown.Y, Color.BlanchedAlmond);
