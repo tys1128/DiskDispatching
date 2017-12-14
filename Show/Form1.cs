@@ -39,7 +39,8 @@ namespace Show
         private int[][] DiskArmPosQueue;
 
         private IEnumerator<DiskState>[] DiskStatesIterator = new IEnumerator<DiskState>[4];
-        private bool[] IsBot = new bool[4];
+
+        private bool[] IsBot = new bool[4]; 
 
         private PictureBox[] PictureBoxs;
 
@@ -90,6 +91,7 @@ namespace Show
             DiskArmPosPointsLeftOn = new PointF(525, 10);
             DiskArmPosPointsRightDown = new PointF(670, 210);
 
+
             List<DiskState> a = new List<DiskState>();
             DiskState _ds = new DiskState();
             _ds.MoveIn = false;
@@ -105,6 +107,7 @@ namespace Show
             {
                 IsBot[i] = false;
                 DiskStatesIterator[i] = a.GetEnumerator();
+
             }
         }
 

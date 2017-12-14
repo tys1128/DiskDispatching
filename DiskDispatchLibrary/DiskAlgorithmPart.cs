@@ -94,7 +94,6 @@ namespace DiskDispatchLibrary
         IEnumerable<DiskState> Read()
         {
             int byteNum = DiskState.Track[DiskState.Now]; //取出要读取的字节数
-            DiskState.Track[DiskState.Now] = 0;           //删除请求
             bool[] sector = new bool[SectorNum];//每个磁道的扇区,有要读的数据为true
 
             //按要读取的字节数初始化磁道状态
@@ -143,6 +142,12 @@ namespace DiskDispatchLibrary
         /// </returns>
         public IEnumerable<DiskState> FCFS(List<KeyValuePair<int, int>> S)
         {
+            //Track[]中记录请求数量
+            foreach (var i in S)
+            {
+                DiskState.Track[i.Key]++;
+            }
+            
             //启动，初次返回状态
             DiskState.TotalRunTime += TimeToStart;
             yield return DiskState;
@@ -159,7 +164,9 @@ namespace DiskDispatchLibrary
                 {
                     yield return item;
                 }
+                DiskState.Track[i.Key]--;
             }
+            yield return DiskState;
 
         }
         /// <summary>
@@ -181,7 +188,7 @@ namespace DiskDispatchLibrary
 
             //运行
             //仍存在需要处理的数据
-            while (mostNearTrack > 0)
+            while (mostNearTrack >= 0)
             {
                 //移动
                 foreach (var item in Move(mostNearTrack))
@@ -196,8 +203,8 @@ namespace DiskDispatchLibrary
                 //读取完清空请求
                 DiskState.Track[mostNearTrack] = 0;
                 mostNearTrack = GetMostNearTrack(DiskState.Now);
-
             }
+            yield return DiskState;
         }
         /// <summary>
         /// 扫描算法（SCAN）
@@ -293,6 +300,7 @@ namespace DiskDispatchLibrary
 
                 }
             }
+            yield return DiskState;
         }
         /// <summary>
         /// 电梯算法（LOOK）
@@ -344,7 +352,8 @@ namespace DiskDispatchLibrary
                     foreach (var item in Read())
                     {
                         yield return item;
-                    }
+                     DiskState.Track[item.Now] = 0;
+                   }
                 }
                 //回转
                 for (int i = TrackSub.Count - 1; i >= 0; i--)
@@ -358,6 +367,7 @@ namespace DiskDispatchLibrary
                     foreach (var item in Read())
                     {
                         yield return item;
+                        DiskState.Track[item.Now] = 0;
                     }
                 }
 
@@ -378,6 +388,7 @@ namespace DiskDispatchLibrary
                     foreach (var item in Read())
                     {
                         yield return item;
+                        DiskState.Track[item.Now] = 0;
                     }
                 }
                 //回转
@@ -392,9 +403,11 @@ namespace DiskDispatchLibrary
                     foreach (var item in Read())
                     {
                         yield return item;
+                        DiskState.Track[item.Now] = 0;
                     }
                 }
             }
+            yield return DiskState;
         }
     }
 }
