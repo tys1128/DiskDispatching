@@ -28,16 +28,15 @@ namespace Show
         private int TrackNum;
         private double BaseAngle;
 
+        Disk _disk = new Disk();
+
         private int BackBufferCount = 2;
         private int CurrutBackBuffer = 0;
         private Bitmap[][] BackBuffer;
 
-        private int QueueSize = 200;
+        private int QueueSize = 300;
         private int CurrutQueueBegin = 0;
         private int[][] DiskArmPosQueue;
-
-        private Disk disk;
-        private int RequestNum = 200;
 
         private IEnumerator<DiskState>[] DiskStatesIterator = new IEnumerator<DiskState>[4];
 
@@ -71,32 +70,7 @@ namespace Show
                     BackBuffer[i][j].SetResolution(72, 72);
                 }
 
-                DiskArmPosQueue[i] = new int[200];
-            }
-        }
-
-        /// <summary>
-        /// 测试用方法
-        /// </summary>
-        /// <param name="n">总数量</param>
-        /// <param name="jj">随机种子</param>
-        /// <returns></returns>
-        public static IEnumerable<DiskState> Get(int n, int jj)
-        {
-            var a = new Random(jj);
-            int j = a.Next(200);
-            for (int i = 0; i != n; ++i)
-            {
-                DiskState b = new DiskState();
-                //b.ArgAccessDelay = 12;
-                b.MoveIn = false;
-                b.Target = 45;
-                b.TotalAccessTime = 45;
-                b.TotalRunTime = 456;
-                b.TotalSeekTime = 45;
-                b.Now = (j + 1) % 200;
-                j = b.Now;
-                yield return b;
+                DiskArmPosQueue[i] = new int[QueueSize];
             }
         }
 
@@ -115,14 +89,8 @@ namespace Show
             DiskArmPosPointsLeftOn = new PointF(525, 10);
             DiskArmPosPointsRightDown = new PointF(670, 210);
 
-            disk = new Disk();
             List<KeyValuePair<int, int>> S = Disk.GetS(20);
             IEnumerable<DiskState>[] DiskStates = new IEnumerable<DiskState>[4];
-
-            //DiskStates[0] = new Disk().Test(S);
-            //DiskStates[1] = new Disk().Test(S);
-            //DiskStates[2] = new Disk().Test(S);
-            //DiskStates[3] = new Disk().Test(S);
 
             DiskStates[0] = new Disk().FCFS(S);
             DiskStates[1] = new Disk().LOOK(S);
@@ -149,14 +117,31 @@ namespace Show
             g.ResetTransform();
             g.DrawString(string.Format(
                     "移动方向:{0}\n目标磁道编号:{1}\n当前磁道:{2}\n总寻道时间:{3}\n总传输时间:{4}\n平均传输时间:{5}\n总运行时间:{6}",
-                    _In.MoveIn ? "向内" : "向外", _In.Target, _In.Now, _In.TotalSeekTime, _In.TotalAccessTime, disk.ArgAccessDelay, _In.TotalRunTime),
+                    _In.MoveIn ? "向内" : "向外", _In.Target, _In.Now, _In.TotalSeekTime, _In.TotalAccessTime, _disk.ArgAccessDelay, _In.TotalRunTime),
                      TextFont, TextBrush, TextPos.X, TextPos.Y);
+
+            for(float i = DiskArmPosPointsLeftOn.X; i <= DiskArmPosPointsRightDown.X; i+=1)
+            {
+                _RenderTarget.SetPixel((int)i, (int)DiskArmPosPointsLeftOn.Y, Color.BlanchedAlmond);
+                _RenderTarget.SetPixel((int)i, (int)DiskArmPosPointsRightDown.Y, Color.BlanchedAlmond);
+            }
+
             for (int i = 0; i != QueueSize; ++i)
             {
                 _RenderTarget.SetPixel((int)MathHelper.Lerp(DiskArmPosPointsLeftOn.X, DiskArmPosPointsRightDown.X, (double)i / QueueSize),
                     (int)MathHelper.Lerp(DiskArmPosPointsRightDown.Y, DiskArmPosPointsLeftOn.Y, (double)(_DiskArmPosQueue[(CurrutQueueBegin + i) % QueueSize]) / TrackNum),
                     Color.Black);
             }
+
+            for (int i = 0; i != TrackNum; ++i)
+                if (_In.Track[i] != 0)
+                {
+                    _RenderTarget.SetPixel((int)DiskArmPosPointsRightDown.X, (int)MathHelper.Lerp(DiskArmPosPointsRightDown.Y, DiskArmPosPointsLeftOn.Y, (double)i / TrackNum), Color.Red);
+                    _RenderTarget.SetPixel((int)DiskArmPosPointsRightDown.X, (int)MathHelper.Lerp(DiskArmPosPointsRightDown.Y, DiskArmPosPointsLeftOn.Y, (double)i / TrackNum) + 1, Color.Red);
+                    _RenderTarget.SetPixel((int)DiskArmPosPointsRightDown.X + 1, (int)MathHelper.Lerp(DiskArmPosPointsRightDown.Y, DiskArmPosPointsLeftOn.Y, (double)i / TrackNum), Color.Red);
+                    _RenderTarget.SetPixel((int)DiskArmPosPointsRightDown.X + 1, (int)MathHelper.Lerp(DiskArmPosPointsRightDown.Y, DiskArmPosPointsLeftOn.Y, (double)i / TrackNum) + 1, Color.Red);
+                }
+
             g.Dispose();
         }
 
@@ -175,6 +160,24 @@ namespace Show
 
             CurrutBackBuffer = (CurrutBackBuffer + 1) % BackBufferCount;
             CurrutQueueBegin = (CurrutQueueBegin + 1) % QueueSize;
+        }
+
+        private void OnRebot(object sender, EventArgs e)
+        {
+            List<KeyValuePair<int, int>> S = Disk.GetS(20);
+            IEnumerable<DiskState>[] DiskStates = new IEnumerable<DiskState>[4];
+
+            DiskStates[0] = new Disk().FCFS(S);
+            DiskStates[1] = new Disk().LOOK(S);
+            DiskStates[2] = new Disk().SCAN(S);
+            DiskStates[3] = new Disk().SSTF(S);
+
+            for (int i = 0; i != 4; ++i)
+            {
+                DiskStatesIterator[i] = DiskStates[i].GetEnumerator();
+                for (int j = 0; j != QueueSize; ++j)
+                    DiskArmPosQueue[i][j] = 0;
+            }
         }
     }
 }

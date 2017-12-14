@@ -39,6 +39,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.timer = new System.Windows.Forms.Timer(this.components);
+            this.ReBot = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBoxFCFS)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxSSTF)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxSCAN)).BeginInit();
@@ -133,11 +134,22 @@
             this.timer.Interval = 1;
             this.timer.Tick += new System.EventHandler(this.Update);
             // 
+            // ReBot
+            // 
+            this.ReBot.Location = new System.Drawing.Point(645, 339);
+            this.ReBot.Name = "ReBot";
+            this.ReBot.Size = new System.Drawing.Size(68, 51);
+            this.ReBot.TabIndex = 8;
+            this.ReBot.Text = "重启";
+            this.ReBot.UseVisualStyleBackColor = true;
+            this.ReBot.Click += new System.EventHandler(this.OnRebot);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1350, 729);
+            this.Controls.Add(this.ReBot);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -170,6 +182,7 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Timer timer;
+        private System.Windows.Forms.Button ReBot;
     }
 }
 
