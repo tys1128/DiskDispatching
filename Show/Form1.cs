@@ -39,6 +39,7 @@ namespace Show
         private int[][] DiskArmPosQueue;
 
         private IEnumerator<DiskState>[] DiskStatesIterator = new IEnumerator<DiskState>[4];
+        private bool[] IsBot = new bool[4]; 
 
         private PictureBox[] PictureBoxs;
 
@@ -108,6 +109,7 @@ namespace Show
 
             for (int i = 0; i != 4; ++i)
             {
+                IsBot[i] = true;
                 DiskStatesIterator[i] = DiskStates[i].GetEnumerator();
             }
         }
@@ -163,6 +165,7 @@ namespace Show
                     Draw(BackBuffer[i][CurrutBackBuffer], DiskStatesIterator[i].Current, DiskArmPosQueue[i]);
                     PictureBoxs[i].Image = BackBuffer[i][CurrutBackBuffer];
                 }
+                else IsBot[i] = false;
             }
 
             CurrutBackBuffer = (CurrutBackBuffer + 1) % BackBufferCount;
@@ -185,6 +188,43 @@ namespace Show
                 for (int j = 0; j != QueueSize; ++j)
                     DiskArmPosQueue[i][j] = 0;
             }
+        }
+
+        private void Rebot(int i)
+        {
+            List<KeyValuePair<int, int>> S = Disk.GetS(20);
+            DiskStatesIterator[i] = new Disk().FCFS(S).GetEnumerator();
+            for (int j = 0; j != QueueSize; ++j)
+                DiskArmPosQueue[i][j] = 0;
+            IsBot[i] = true;
+        }
+
+        private void FCFS_Button_Click(object sender, EventArgs e)
+        {
+            Rebot(0);
+        }
+
+        private void LOOK_Button_Click(object sender, EventArgs e)
+        {
+            Rebot(1);
+
+        }
+
+        private void SCAN_Button_Click(object sender, EventArgs e)
+        {
+            Rebot(2);
+        }
+
+        private void SSTF_Button_Click(object sender, EventArgs e)
+        {
+            Rebot(3);
+        }
+
+        private void RebotOthers(object sender, EventArgs e)
+        {
+            for(int i = 0; i != 4; ++i)
+                if (IsBot[i] == false)
+                    Rebot(i);
         }
     }
 }
