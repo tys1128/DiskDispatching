@@ -39,7 +39,7 @@ namespace Show
         private int[][] DiskArmPosQueue;
 
         private IEnumerator<DiskState>[] DiskStatesIterator = new IEnumerator<DiskState>[4];
-        private bool[] IsBot = new bool[4]; 
+        private bool[] IsBot = new bool[4];
 
         private PictureBox[] PictureBoxs;
 
@@ -90,20 +90,21 @@ namespace Show
             DiskArmPosPointsLeftOn = new PointF(525, 10);
             DiskArmPosPointsRightDown = new PointF(670, 210);
 
-            List<KeyValuePair<int, int>> S = Disk.GetS(20);
-            IEnumerable<DiskState>[] DiskStates = new IEnumerable<DiskState>[4];
-
-            DiskStates[0] = new Disk().FCFS(S);
-            DiskStates[1] = new Disk().LOOK(S);
-            DiskStates[2] = new Disk().SCAN(S);
-            DiskStates[3] = new Disk().SSTF(S);
-
-
+            List<DiskState> a = new List<DiskState>();
+            DiskState _ds = new DiskState();
+            _ds.MoveIn = false;
+            _ds.Now = 200;
+            _ds.Target = 0;
+            _ds.TotalAccessTime = 0;
+            _ds.TotalRunTime = 0;
+            _ds.TotalSeekTime = 0;
+            _ds.Track = new int[200];
+            a.Add(_ds);
 
             for (int i = 0; i != 4; ++i)
             {
-                IsBot[i] = true;
-                DiskStatesIterator[i] = DiskStates[i].GetEnumerator();
+                IsBot[i] = false;
+                DiskStatesIterator[i] = a.GetEnumerator();
             }
         }
 
@@ -122,7 +123,7 @@ namespace Show
                     _In.MoveIn ? "向内" : "向外", _In.Target, _In.Now, _In.TotalSeekTime, _In.TotalAccessTime, _disk.ArgAccessDelay, _In.TotalRunTime),
                      TextFont, TextBrush, TextPos.X, TextPos.Y);
 
-            for(float i = DiskArmPosPointsLeftOn.X; i <= DiskArmPosPointsRightDown.X; i+=1)
+            for (float i = DiskArmPosPointsLeftOn.X; i <= DiskArmPosPointsRightDown.X; i += 1)
             {
                 _RenderTarget.SetPixel((int)i, (int)DiskArmPosPointsLeftOn.Y, Color.BlanchedAlmond);
                 _RenderTarget.SetPixel((int)i, (int)DiskArmPosPointsRightDown.Y, Color.BlanchedAlmond);
@@ -151,7 +152,7 @@ namespace Show
         {
             for (int i = 0; i != 4; ++i)
             {
-                if (DiskStatesIterator[i].MoveNext())
+                if (DiskStatesIterator[i] != null && DiskStatesIterator[i].MoveNext())
                 {
                     DiskArmPosQueue[i][(CurrutQueueBegin + QueueSize - 1) % QueueSize] = DiskStatesIterator[i].Current.Now;
 
@@ -177,6 +178,7 @@ namespace Show
 
             for (int i = 0; i != 4; ++i)
             {
+                IsBot[i] = true;
                 DiskStatesIterator[i] = DiskStates[i].GetEnumerator();
                 for (int j = 0; j != QueueSize; ++j)
                     DiskArmPosQueue[i][j] = 0;
@@ -215,7 +217,7 @@ namespace Show
 
         private void RebotOthers(object sender, EventArgs e)
         {
-            for(int i = 0; i != 4; ++i)
+            for (int i = 0; i != 4; ++i)
                 if (IsBot[i] == false)
                     Rebot(i);
         }
