@@ -6,8 +6,13 @@ using System.Threading.Tasks;
 
 namespace DiskDispatchLibrary
 {
-    partial class Disk
+    public partial class Disk
     {
+        public IEnumerable<DiskState> Test(List<KeyValuePair<int, int>> S)
+        {
+            yield return DiskState;
+        }
+
         /// <summary>
         /// 将S中的请求，加载到Track[]中
         /// </summary>
@@ -16,9 +21,9 @@ namespace DiskDispatchLibrary
         {
             foreach (var i in S)
             {
-                Track[i.Key] = i.Value;
+                DiskState.Track[i.Key] = i.Value;
             }
-            S.Clear();
+            //S.Clear();
         }
         /// <summary>
         /// 从Track[]中选出离Track[now]最近的磁道
@@ -29,13 +34,14 @@ namespace DiskDispatchLibrary
         {
             int i = now - 1;
             int j = now + 1;
-            for (; i >= 0 && j < Track.Length; i--, j++)
+            for (; i >= 0 || j < DiskState.Track.Length; i--, j++)
             {
-                if (Track[i] != 0)
+                //
+                if (i >= 0 && DiskState.Track[i] != 0)
                 {
                     return i;
                 }
-                if (Track[j] != 0)
+                if (j < DiskState.Track.Length && DiskState.Track[j] != 0)
                 {
                     return j;
                 }
@@ -50,17 +56,35 @@ namespace DiskDispatchLibrary
         /// <returns>磁盘状态</returns>
         IEnumerable<DiskState> Move(int target)
         {
-            DiskState.MoveIn = DiskState.Now - target > 0 ? true : false;
+            DiskState.MoveIn = target - DiskState.Now > 0 ? true : false;
             DiskState.Target = target;
-            //移动
-            for (int i = DiskState.Now; i <= target; i++)
+            if (DiskState.MoveIn)
             {
+                //向内移动
+                for (int i = DiskState.Now; i <= target; i++)
+                {
+                    DiskState.Now++;
+
+                    DiskState.TotalSeekTime += TimePerTrack;
+                    DiskState.TotalRunTime += TimePerTrack;
+
+                    yield return DiskState;
+                }
+                DiskState.Now--;
+            }
+            else
+            {
+                //向外移动
+                for (int i = DiskState.Now; i >= target; i--)
+                {
+                    DiskState.Now--;
+
+                    DiskState.TotalSeekTime += TimePerTrack;
+                    DiskState.TotalRunTime += TimePerTrack;
+
+                    yield return DiskState;
+                }
                 DiskState.Now++;
-
-                DiskState.TotalSeekTime += TimePerTrack;
-                DiskState.TotalRunTime += TimePerTrack;
-
-                yield return DiskState;
             }
         }
         /// <summary>
@@ -69,8 +93,8 @@ namespace DiskDispatchLibrary
         /// <returns>磁盘状态</returns>
         IEnumerable<DiskState> Read()
         {
-            int byteNum = Track[DiskState.Now]; //取出要读取的字节数
-            Track[DiskState.Now] = 0;           //删除请求
+            int byteNum = DiskState.Track[DiskState.Now]; //取出要读取的字节数
+            DiskState.Track[DiskState.Now] = 0;           //删除请求
             bool[] sector = new bool[SectorNum];//每个磁道的扇区,有要读的数据为true
 
             //按要读取的字节数初始化磁道状态
@@ -119,7 +143,24 @@ namespace DiskDispatchLibrary
         /// </returns>
         public IEnumerable<DiskState> FCFS(List<KeyValuePair<int, int>> S)
         {
-            throw new NotImplementedException();
+            //启动，初次返回状态
+            DiskState.TotalRunTime += TimeToStart;
+            yield return DiskState;
+
+            foreach (var i in S)
+            {
+                //移动
+                foreach (var item in Move(i.Key))
+                {
+                    yield return item;
+                }
+                //读取
+                foreach (var item in Read())
+                {
+                    yield return item;
+                }
+            }
+
         }
         /// <summary>
         /// 最短查找时间优先（SSTF）算法
@@ -152,6 +193,8 @@ namespace DiskDispatchLibrary
                 {
                     yield return item;
                 }
+                //读取完清空请求
+                DiskState.Track[mostNearTrack] = 0;
                 mostNearTrack = GetMostNearTrack(DiskState.Now);
 
             }
@@ -164,23 +207,194 @@ namespace DiskDispatchLibrary
         /// 启动后返回一次磁盘的状态，之后返回的每个状态，状态间的间隔为读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 
         /// 当前：读一个扇区的时间 = TimePerTrack = 1，
         /// </returns>
-        public IEnumerable<DiskState> LOOK(List<KeyValuePair<int, int>> S)
+        public IEnumerable<DiskState> SCAN(List<KeyValuePair<int, int>> S)
         {
-            throw new NotImplementedException();
+            LoadRequest(S);
+
+            //启动，初次返回状态
+            DiskState.TotalRunTime += TimeToStart;
+            yield return DiskState;
+
+            if (DiskState.MoveIn == true)
+            {
+                for (int i = DiskState.Now; i <= 199; i++)
+                {
+                    if (DiskState.Track[i] != 0)
+                    {
+                        //移动
+                        foreach (var item in Move(i))
+                        {
+                            yield return item;
+                        }
+                        //读取
+                        foreach (var item in Read())
+                        {
+                            yield return item;
+                        }
+                        DiskState.Track[i] = 0;
+                    }
+
+                }
+                for (int i = 199; i >= 0; i--)
+                {
+                    if (DiskState.Track[i] != 0)
+                    {
+                        //移动
+                        foreach (var item in Move(i))
+                        {
+                            yield return item;
+                        }
+                        //读取
+                        foreach (var item in Read())
+                        {
+                            yield return item;
+                        }
+                        DiskState.Track[i] = 0;
+                    }
+
+                }
+            }
+            else
+            {
+                for (int i = DiskState.Now; i >= 0; i--)
+                {
+                    if (DiskState.Track[i] != 0)
+                    {
+                        //移动
+                        foreach (var item in Move(i))
+                        {
+                            yield return item;
+                        }
+                        //读取
+                        foreach (var item in Read())
+                        {
+                            yield return item;
+                        }
+                        DiskState.Track[i] = 0;
+                    }
+
+                }
+                for (int i = 0; i <= 199; i++)
+                {
+                    if (DiskState.Track[i] != 0)
+                    {
+                        //移动
+                        foreach (var item in Move(i))
+                        {
+                            yield return item;
+                        }
+                        //读取
+                        foreach (var item in Read())
+                        {
+                            yield return item;
+                        }
+                        DiskState.Track[i] = 0;
+                    }
+
+                }
+            }
         }
         /// <summary>
         /// 电梯算法（LOOK）
+        /// 
         /// </summary>
         /// <param name="S">磁道I/O访问序列S</param>
         /// <returns>
         /// 启动后返回一次磁盘的状态，之后返回的每个状态，状态间的间隔为读一个扇区的时间 (60*1000/(Rmp*SectorNum))ms 
         /// 当前：读一个扇区的时间 = TimePerTrack = 1，
         /// </returns>
-        public IEnumerable<DiskState> SCAN(List<KeyValuePair<int, int>> S)
+        public IEnumerable<DiskState> LOOK(List<KeyValuePair<int, int>> S)
         {
-            throw new NotImplementedException();
+            LoadRequest(S);
+            List<int> TrackAdd = new List<int>();//装入比当前磁道大的含有请求的磁道下标
+            List<int> TrackSub = new List<int>();//装入比当前磁道小或等于当前磁道的含有请求的磁道下标
+
+            //启动，初次返回状态
+            DiskState.TotalRunTime += TimeToStart;
+            yield return DiskState;
+
+            //初始化TrackSub
+            for (int i = 0; i <= DiskState.Now; i++)
+            {
+                if (DiskState.Track[i] != 0)
+                {
+                    TrackSub.Add(i);
+                }
+            }
+            //初始化TrackAdd
+            for (int i = DiskState.Now; i < trackNum; i++)
+            {
+                if (DiskState.Track[i] != 0)
+                {
+                    TrackAdd.Add(i);
+                }
+            }
+            //向内，先读取TrackAdd，再读取TrackSub
+            if (DiskState.MoveIn == true)
+            {
+                //
+                for (int i = 0; i < TrackAdd.Count; i++)
+                {
+                    //移动
+                    foreach (var item in Move(TrackAdd[i]))
+                    {
+                        yield return item;
+                    }
+                    //读取
+                    foreach (var item in Read())
+                    {
+                        yield return item;
+                    }
+                }
+                //回转
+                for (int i = TrackSub.Count - 1; i >= 0; i--)
+                {
+                    //移动
+                    foreach (var item in Move(TrackSub[i]))
+                    {
+                        yield return item;
+                    }
+                    //读取
+                    foreach (var item in Read())
+                    {
+                        yield return item;
+                    }
+                }
+
+
+
+            }
+            //向外，先读取TrackSub，再读取TrackAdd
+            else
+            {
+                for (int i = TrackSub.Count - 1; i >= 0; i--)
+                {
+                    //移动
+                    foreach (var item in Move(TrackSub[i]))
+                    {
+                        yield return item;
+                    }
+                    //读取
+                    foreach (var item in Read())
+                    {
+                        yield return item;
+                    }
+                }
+                //回转
+                for (int i = 0; i < TrackAdd.Count; i++)
+                {
+                    //移动
+                    foreach (var item in Move(TrackAdd[i]))
+                    {
+                        yield return item;
+                    }
+                    //读取
+                    foreach (var item in Read())
+                    {
+                        yield return item;
+                    }
+                }
+            }
         }
-
-
     }
 }

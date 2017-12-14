@@ -40,11 +40,6 @@ namespace DiskDispatchLibrary
         /// 通常使用磁盘旋转一周所需时间的1/2表示
         /// </summary>
         int ArgAccessDelay { get; set; }
-        /// <summary>
-        /// 盘面的磁道数（由外向内）固定为：0,1,2，……，198,199
-        /// 每个单元存储磁道的I/O请求数量,忽略不同请求对同一磁道请求的不同
-        /// </summary>
-        int[] Track { get; set; }
     }
 
 

@@ -9,7 +9,6 @@ namespace Show
 {
     public partial class Form1 : Form
     {
-        private Disk _disk = new Disk();
 
         private Font TextFont = new Font("宋体", 17);
         private Brush TextBrush = new System.Drawing.SolidBrush(Color.Black);
@@ -37,7 +36,9 @@ namespace Show
         private int CurrutQueueBegin = 0;
         private int[][] DiskArmPosQueue;
 
+        private Disk disk;
         private int RequestNum = 200;
+
         private IEnumerator<DiskState>[] DiskStatesIterator = new IEnumerator<DiskState>[4];
 
         private PictureBox[] PictureBoxs;
@@ -74,20 +75,26 @@ namespace Show
             }
         }
 
-        public static IEnumerable<DiskState> Get(int n,int jj)
+        /// <summary>
+        /// 测试用方法
+        /// </summary>
+        /// <param name="n">总数量</param>
+        /// <param name="jj">随机种子</param>
+        /// <returns></returns>
+        public static IEnumerable<DiskState> Get(int n, int jj)
         {
             var a = new Random(jj);
             int j = a.Next(200);
             for (int i = 0; i != n; ++i)
             {
                 DiskState b = new DiskState();
-                b.ArgAccessDelay = 12;
+                //b.ArgAccessDelay = 12;
                 b.MoveIn = false;
                 b.Target = 45;
                 b.TotalAccessTime = 45;
                 b.TotalRunTime = 456;
                 b.TotalSeekTime = 45;
-                b.Now = a.Next(-1, 2) + j;
+                b.Now = (j + 1) % 200;
                 j = b.Now;
                 yield return b;
             }
@@ -108,18 +115,25 @@ namespace Show
             DiskArmPosPointsLeftOn = new PointF(525, 10);
             DiskArmPosPointsRightDown = new PointF(670, 210);
 
-            List<KeyValuePair<int, int>> S = Disk.GetS(RequestNum);
+            disk = new Disk();
+            List<KeyValuePair<int, int>> S = Disk.GetS(20);
             IEnumerable<DiskState>[] DiskStates = new IEnumerable<DiskState>[4];
-            DiskStates[0] = _disk.SSTF(S);
-            DiskStates[1] = _disk.SSTF(S);
-            DiskStates[2] = _disk.SSTF(S);
-            DiskStates[3] = _disk.SSTF(S);
+
+            //DiskStates[0] = new Disk().Test(S);
+            //DiskStates[1] = new Disk().Test(S);
+            //DiskStates[2] = new Disk().Test(S);
+            //DiskStates[3] = new Disk().Test(S);
+
+            DiskStates[0] = new Disk().FCFS(S);
+            DiskStates[1] = new Disk().LOOK(S);
+            DiskStates[2] = new Disk().SCAN(S);
+            DiskStates[3] = new Disk().SSTF(S);
 
 
 
             for (int i = 0; i != 4; ++i)
             {
-                DiskStatesIterator[i] = Get(155544556, i).GetEnumerator();
+                DiskStatesIterator[i] = DiskStates[i].GetEnumerator();
             }
         }
 
@@ -135,7 +149,7 @@ namespace Show
             g.ResetTransform();
             g.DrawString(string.Format(
                     "移动方向:{0}\n目标磁道编号:{1}\n当前磁道:{2}\n总寻道时间:{3}\n总传输时间:{4}\n平均传输时间:{5}\n总运行时间:{6}",
-                    _In.MoveIn ? "向内" : "向外", _In.Target, _In.Now, _In.TotalSeekTime, _In.TotalAccessTime, _In.ArgAccessDelay, _In.TotalRunTime),
+                    _In.MoveIn ? "向内" : "向外", _In.Target, _In.Now, _In.TotalSeekTime, _In.TotalAccessTime, disk.ArgAccessDelay, _In.TotalRunTime),
                      TextFont, TextBrush, TextPos.X, TextPos.Y);
             for (int i = 0; i != QueueSize; ++i)
             {
