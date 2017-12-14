@@ -21,7 +21,7 @@ namespace DiskDispatchLibrary
         {
             foreach (var i in S)
             {
-                Track[i.Key] = i.Value;
+                DiskState.Track[i.Key] = i.Value;
             }
             //S.Clear();
         }
@@ -34,18 +34,17 @@ namespace DiskDispatchLibrary
         {
             int i = now - 1;
             int j = now + 1;
-            for (; i >= 0 || j < Track.Length; i--, j++)
+            for (; i >= 0 || j < DiskState.Track.Length; i--, j++)
             {
                 //
-                if (i >= 0 && Track[i] != 0)
+                if (i >= 0 && DiskState.Track[i] != 0)
                 {
                     return i;
                 }
-                if (j < Track.Length && Track[j] != 0)
+                if (j < DiskState.Track.Length && DiskState.Track[j] != 0)
                 {
                     return j;
                 }
-
             }
             //无请求
             return -1;
@@ -94,8 +93,8 @@ namespace DiskDispatchLibrary
         /// <returns>磁盘状态</returns>
         IEnumerable<DiskState> Read()
         {
-            int byteNum = Track[DiskState.Now]; //取出要读取的字节数
-            Track[DiskState.Now] = 0;           //删除请求
+            int byteNum = DiskState.Track[DiskState.Now]; //取出要读取的字节数
+            DiskState.Track[DiskState.Now] = 0;           //删除请求
             bool[] sector = new bool[SectorNum];//每个磁道的扇区,有要读的数据为true
 
             //按要读取的字节数初始化磁道状态
@@ -195,7 +194,7 @@ namespace DiskDispatchLibrary
                     yield return item;
                 }
                 //读取完清空请求
-                Track[mostNearTrack] = 0;
+                DiskState.Track[mostNearTrack] = 0;
                 mostNearTrack = GetMostNearTrack(DiskState.Now);
 
             }
@@ -220,7 +219,7 @@ namespace DiskDispatchLibrary
             {
                 for (int i = DiskState.Now; i <= 199; i++)
                 {
-                    if (Track[i] != 0)
+                    if (DiskState.Track[i] != 0)
                     {
                         //移动
                         foreach (var item in Move(i))
@@ -232,13 +231,13 @@ namespace DiskDispatchLibrary
                         {
                             yield return item;
                         }
-                        Track[i] = 0;
+                        DiskState.Track[i] = 0;
                     }
 
                 }
                 for (int i = 199; i >= 0; i--)
                 {
-                    if (Track[i] != 0)
+                    if (DiskState.Track[i] != 0)
                     {
                         //移动
                         foreach (var item in Move(i))
@@ -250,7 +249,7 @@ namespace DiskDispatchLibrary
                         {
                             yield return item;
                         }
-                        Track[i] = 0;
+                        DiskState.Track[i] = 0;
                     }
 
                 }
@@ -259,7 +258,7 @@ namespace DiskDispatchLibrary
             {
                 for (int i = DiskState.Now; i >= 0; i--)
                 {
-                    if (Track[i] != 0)
+                    if (DiskState.Track[i] != 0)
                     {
                         //移动
                         foreach (var item in Move(i))
@@ -271,13 +270,13 @@ namespace DiskDispatchLibrary
                         {
                             yield return item;
                         }
-                        Track[i] = 0;
+                        DiskState.Track[i] = 0;
                     }
 
                 }
                 for (int i = 0; i <= 199; i++)
                 {
-                    if (Track[i] != 0)
+                    if (DiskState.Track[i] != 0)
                     {
                         //移动
                         foreach (var item in Move(i))
@@ -289,7 +288,7 @@ namespace DiskDispatchLibrary
                         {
                             yield return item;
                         }
-                        Track[i] = 0;
+                        DiskState.Track[i] = 0;
                     }
 
                 }
@@ -317,7 +316,7 @@ namespace DiskDispatchLibrary
             //初始化TrackSub
             for (int i = 0; i <= DiskState.Now; i++)
             {
-                if (Track[i] != 0)
+                if (DiskState.Track[i] != 0)
                 {
                     TrackSub.Add(i);
                 }
@@ -325,7 +324,7 @@ namespace DiskDispatchLibrary
             //初始化TrackAdd
             for (int i = DiskState.Now; i < trackNum; i++)
             {
-                if (Track[i] != 0)
+                if (DiskState.Track[i] != 0)
                 {
                     TrackAdd.Add(i);
                 }

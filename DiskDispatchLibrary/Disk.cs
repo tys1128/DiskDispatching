@@ -36,6 +36,11 @@ namespace DiskDispatchLibrary
         /// 总运行时间(ms)
         /// </summary>
         public int TotalRunTime { get; set; }
+        /// <summary>
+        /// 盘面的磁道数（由外向内）固定为：0,1,2，……，198,199
+        /// 每个单元存储磁道的I/O请求数量,忽略不同请求对同一磁道请求的不同
+        /// </summary>
+        public int[] Track { get; set; }
 
     }
 
@@ -57,7 +62,6 @@ namespace DiskDispatchLibrary
         public int SectorNum { get; set; }
         public int BytePerSector { get; set; }
         public int ArgAccessDelay { get; set; }
-        public int[] Track { get; set; }
 
         DiskState DiskState { get; set; }
 
@@ -75,7 +79,7 @@ namespace DiskDispatchLibrary
                 Random random = new Random();
                 for (int i = 0; i < trackNum; i++)
                 {
-                    s.Add(new KeyValuePair<int, int>(random.Next(0, trackNum), random.Next(1024)));
+                    s.Add(new KeyValuePair<int, int>(random.Next(0, trackNum), random.Next(512,1024)));
                 }
                 return s;
             }
@@ -106,7 +110,6 @@ namespace DiskDispatchLibrary
             Rpm = 5000;         //Rmp*SectorNum == 60*1000  时，
             SectorNum = 12;     //读一个扇区的时间为1ms
             BytePerSector = 128;
-            Track = new int[trackNum];
             ArgAccessDelay = 60 * 1000 / (Rpm * 2);
 
             TimePerSector = 60 * 1000 / (Rpm * SectorNum);
@@ -114,6 +117,7 @@ namespace DiskDispatchLibrary
             {
                 Now = random.Next(70, trackNum - 70),
                 MoveIn = Convert.ToBoolean(random.Next(0, 2)),
+                Track = new int[trackNum]
             };
         }
         //public Disk(int timePerTrack, int timeToStart, int rpm, int sectorNum, int bytePerSector)
@@ -123,7 +127,7 @@ namespace DiskDispatchLibrary
         //    Rpm = rpm;
         //    SectorNum = sectorNum;
         //    BytePerSector = bytePerSector;
-        //    Track = new int[trackNum];
+        //    DiskState.Track = new int[trackNum];
         //}
 
 
