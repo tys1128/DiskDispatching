@@ -42,7 +42,7 @@ namespace Show
 
         private IEnumerator<DiskState>[] DiskStatesIterator = new IEnumerator<DiskState>[4];
 
-        private bool[] IsBot = new bool[4]; 
+        private bool[] IsBot = new bool[4];
 
         private PictureBox[] PictureBoxs;
 
@@ -200,7 +200,13 @@ namespace Show
         private void Rebot(int i)
         {
             if (S == null) S = Disk.GetS(20);
-            DiskStatesIterator[i] = new Disk().FCFS(S).GetEnumerator();
+            switch (i)
+            {
+                case 0: DiskStatesIterator[i] = new Disk().FCFS(S).GetEnumerator(); break;
+                case 1: DiskStatesIterator[i] = new Disk().LOOK(S).GetEnumerator(); break;
+                case 2: DiskStatesIterator[i] = new Disk().SCAN(S).GetEnumerator(); break;
+                case 3: DiskStatesIterator[i] = new Disk().SSTF(S).GetEnumerator(); break;
+            }
             for (int j = 0; j != QueueSize; ++j)
                 DiskArmPosQueue[i][j] = 0;
             IsBot[i] = true;
