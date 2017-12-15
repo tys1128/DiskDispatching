@@ -200,6 +200,7 @@ namespace Show
         private void Rebot(int i)
         {
             if (S == null) S = Disk.GetS(20);
+
             switch (i)
             {
                 case 0: DiskStatesIterator[i] = new Disk().FCFS(S).GetEnumerator(); break;
@@ -207,6 +208,7 @@ namespace Show
                 case 2: DiskStatesIterator[i] = new Disk().SCAN(S).GetEnumerator(); break;
                 case 3: DiskStatesIterator[i] = new Disk().SSTF(S).GetEnumerator(); break;
             }
+
             for (int j = 0; j != QueueSize; ++j)
                 DiskArmPosQueue[i][j] = 0;
             IsBot[i] = true;
